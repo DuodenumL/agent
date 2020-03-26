@@ -13,6 +13,7 @@ import (
 	coreutils "github.com/projecteru2/core/utils"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/jschwinger23/bufpipe"
 	"github.com/projecteru2/agent/common"
 	"github.com/projecteru2/agent/engine/logs"
 	"github.com/projecteru2/agent/types"
@@ -30,8 +31,8 @@ func (e *Engine) attach(container *types.Container) {
 		return
 	}
 
-	outr, outw := io.Pipe()
-	errr, errw := io.Pipe()
+	outr, outw := bufpipe.New(nil, 10*1024*1024)
+	errr, errw := bufpipe.New(nil, 10*1024*1024)
 	ctx := context.Background()
 	cancelCtx, cancel := context.WithCancel(ctx)
 	go func() {
