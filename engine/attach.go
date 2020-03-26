@@ -5,7 +5,6 @@ import (
 	"context"
 	"io"
 	"net/http/httputil"
-	"strings"
 	"time"
 
 	"github.com/docker/docker/pkg/stdcopy"
@@ -61,17 +60,11 @@ func (e *Engine) attach(container *types.Container) {
 	// attach metrics
 	go e.stat(cancelCtx, container)
 	pump := func(typ string, source io.Reader) {
-		buf := bufio.NewReader(source)
-		for {
-			data, err := buf.ReadString('\n')
-			if err != nil {
-				if err != io.EOF {
-					log.Errorf("[attach] attach pump %s %s %s %s", container.Name, coreutils.ShortID(container.ID), typ, err)
-				}
-				return
-			}
-			data = strings.TrimSuffix(data, "\n")
-			data = strings.TrimSuffix(data, "\r")
+		buf := bufio.NewScanner(source)
+		for buf.Scan() {
+			data := buf.Text()
+			//			data = strings.TrimSuffix(data, "\n")
+			//			data = strings.TrimSuffix(data, "\r")
 			l := &types.Log{
 				ID:         container.ID,
 				Name:       container.Name,
@@ -89,6 +82,10 @@ func (e *Engine) attach(container *types.Container) {
 				log.Errorf("[attach] %s", data)
 			}
 		}
+		if err := buf.Err(); err != nil {
+			log.Errorf("[attach] attach pump %s %s %s %s", container.Name, coreutils.ShortID(container.ID), typ, err)
+		}
+		log.Infof("[attach] %s %s forwarding done", container.ID, typ)
 	}
 	go pump("stdout", outr)
 	go pump("stderr", errr)
