@@ -32,13 +32,14 @@ type LogConfig struct {
 
 // Config contain all configs
 type Config struct {
-	PidFile             string               `yaml:"pid" required:"true" default:"/tmp/agent.pid"`
-	HealthCheckInterval int                  `yaml:"health_check_interval"`
-	HealthCheckTimeout  int                  `yaml:"health_check_timeout"`
-	HealthCheckCacheTTL int                  `yaml:"health_check_cache_ttl"`
-	Core                string               `yaml:"core" required:"true"`
-	Auth                coretypes.AuthConfig `yaml:"auth"`
-	HostName            string               `yaml:"-"`
+	PidFile              string               `yaml:"pid" required:"true" default:"/tmp/agent.pid"`
+	HealthCheckInterval  int                  `yaml:"health_check_interval"`
+	HealthCheckTimeout   int                  `yaml:"health_check_timeout"`
+	HealthCheckCacheTTL  int                  `yaml:"health_check_cache_ttl"`
+	HealthCheckStatusTTL int                  `yaml:"health_check_status_ttl"`
+	Core                 string               `yaml:"core" required:"true"`
+	Auth                 coretypes.AuthConfig `yaml:"auth"`
+	HostName             string               `yaml:"-"`
 
 	Docker  DockerConfig
 	Metrics MetricsConfig
@@ -75,6 +76,9 @@ func (config *Config) PrepareConfig(c *cli.Context) {
 	}
 	if c.Int("health-check-timeout") > 0 {
 		config.HealthCheckTimeout = c.Int("health-check-timeout")
+	}
+	if c.Int("health-check-status-ttl") > 0 {
+		config.HealthCheckStatusTTL = c.Int("health-check-status-ttl")
 	}
 	if c.String("docker-endpoint") != "" {
 		config.Docker.Endpoint = c.String("docker-endpoint")

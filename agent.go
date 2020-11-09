@@ -153,6 +153,12 @@ func main() {
 				EnvVars: []string{"ERU_AGENT_HEALTH_CHECK_INTERVAL"},
 			},
 			&cli.IntFlag{
+				Name:    "health-check-status-ttl",
+				Value:   0,
+				Usage:   "ttl for container's health status in remote store",
+				EnvVars: []string{"ERU_AGENT_HEALTH_CHECK_STATUS_TTL"},
+			},
+			&cli.IntFlag{
 				Name:    "health-check-timeout",
 				Value:   0,
 				Usage:   "timeout for agent to check container's health status",
