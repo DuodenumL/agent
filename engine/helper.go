@@ -3,9 +3,11 @@ package engine
 import (
 	"context"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"math"
 	"os"
 	"strings"
+	"time"
 
 	enginetypes "github.com/docker/docker/api/types"
 	enginecontainer "github.com/docker/docker/api/types/container"
@@ -117,4 +119,22 @@ func (e *Engine) detectContainer(id string) (*types.Container, error) {
 	}
 
 	return container, nil
+}
+
+func backoffRetry(ctx context.Context, maxInterval int64, f func() error) error {
+	t := time.NewTimer(0)
+	var err error
+	for i := int64(1); i < maxInterval; i *= 2 {
+		select {
+		case <-t.C:
+			if err = f(); err == nil {
+				return nil
+			}
+			log.Debugf("[backoffRetry] will retry after %d seconds", i)
+			t.Reset(time.Duration(i) * time.Second)
+		case <-ctx.Done():
+			return err
+		}
+	}
+	return err
 }
