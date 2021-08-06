@@ -3,10 +3,6 @@ package engine
 import (
 	"context"
 	"fmt"
-	"math"
-	"os"
-	"strings"
-
 	enginetypes "github.com/docker/docker/api/types"
 	enginecontainer "github.com/docker/docker/api/types/container"
 	enginefilters "github.com/docker/docker/api/types/filters"
@@ -15,6 +11,9 @@ import (
 	"github.com/projecteru2/agent/types"
 	"github.com/projecteru2/core/cluster"
 	coreutils "github.com/projecteru2/core/utils"
+	"math"
+	"os"
+	"strings"
 )
 
 func useLabelAsFilter() bool {

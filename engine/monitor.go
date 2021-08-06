@@ -49,7 +49,7 @@ func (e *Engine) handleContainerStart(event eventtypes.Message) {
 			log.Errorf("[handleContainerStart] update deploy status failed %v", err)
 		}
 	} else {
-		go e.checkOneContainer(container)
+		go e.checkOneContainerWithBackoffRetry(container)
 	}
 }
 
