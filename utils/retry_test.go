@@ -1,4 +1,4 @@
-package engine
+package utils
 
 import (
 	"context"
@@ -11,10 +11,11 @@ func TestBackoffRetry(t *testing.T) {
 	i := 0
 	f := func() error {
 		i++
-		if i < 3 {
+		if i < 1 {
 			return errors.New("xxx")
 		}
 		return nil
 	}
-	assert.Nil(t, backoffRetry(context.Background(), 10, f))
+	assert.Nil(t, BackoffRetry(context.Background(), 1, f))
+	assert.EqualValues(t, 1, i)
 }

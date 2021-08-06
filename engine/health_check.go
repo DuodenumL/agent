@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"github.com/projecteru2/agent/utils"
 	"net"
 	"net/http"
 	"time"
@@ -82,7 +83,7 @@ func (e *Engine) checkOneContainer(container *types.Container) {
 // 检查一个容器，允许重试
 func (e *Engine) checkOneContainerWithBackoffRetry(container *types.Container) {
 	log.Debugf("[checkOneContainerWithBackoffRetry] check container %s", container.ID)
-	err := backoffRetry(context.TODO(), e.config.GetHealthCheckStatusTTL(), func() error {
+	err := utils.BackoffRetry(context.TODO(), e.config.GetHealthCheckStatusTTL(), func() error {
 		e.checkOneContainer(container)
 		if !container.Healthy {
 			// 这个err就是用来判断要不要继续的，不用打在日志里
