@@ -81,6 +81,7 @@ func (e *Engine) checkOneContainer(container *types.Container) {
 
 // 检查一个容器，允许重试
 func (e *Engine) checkOneContainerWithBackoffRetry(container *types.Container) {
+	log.Debugf("[checkOneContainerWithBackoffRetry] check container %s", container.ID)
 	err := backoffRetry(context.TODO(), e.config.GetHealthCheckStatusTTL(), func() error {
 		e.checkOneContainer(container)
 		if !container.Healthy {
