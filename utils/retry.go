@@ -2,13 +2,12 @@ package utils
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
-// BackoffRetry retry up to `maxAttempts` times, and the interval will grow exponentially
+// BackoffRetry retries up to `maxAttempts` times, and the interval will grow exponentially
 func BackoffRetry(ctx context.Context, maxAttempts int, f func() error) error {
 	t := time.NewTimer(0)
 	var err error
@@ -25,7 +24,6 @@ func BackoffRetry(ctx context.Context, maxAttempts int, f func() error) error {
 				return nil
 			}
 			log.Debugf("[backoffRetry] will retry after %d seconds", interval)
-			fmt.Printf("[backoffRetry] will retry after %d seconds\n", interval)
 			t.Reset(time.Duration(interval) * time.Second)
 			interval *= 2
 		case <-ctx.Done():
