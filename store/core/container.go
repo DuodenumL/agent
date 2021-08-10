@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/projecteru2/agent/types"
-	"github.com/projecteru2/agent/utils"
 	pb "github.com/projecteru2/core/rpc/gen"
 	coretypes "github.com/projecteru2/core/types"
-	"time"
 )
 
-func (c *CoreStore) setContainerStatus(ctx context.Context, container *types.Container, node *coretypes.Node, ttl int64) error {
+// SetContainerStatus deploy containers
+func (c *CoreStore) SetContainerStatus(ctx context.Context, container *types.Container, node *coretypes.Node, ttl int64) error {
 	status := fmt.Sprintf("%s|%v|%v", container.ID, container.Running, container.Healthy)
 	if ttl == 0 {
 		cached, ok := c.cache.Get(container.ID)
@@ -54,11 +55,4 @@ func (c *CoreStore) setContainerStatus(ctx context.Context, container *types.Con
 	}
 
 	return err
-}
-
-// SetContainerStatus deploy containers
-func (c *CoreStore) SetContainerStatus(ctx context.Context, container *types.Container, node *coretypes.Node, ttl int64) error {
-	return utils.BackoffRetry(ctx, 10, func() error {
-		return c.setContainerStatus(ctx, container, node, ttl)
-	})
 }
