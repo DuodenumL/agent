@@ -3,13 +3,14 @@ package engine
 import (
 	"context"
 	"fmt"
-	"github.com/projecteru2/agent/utils"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/projecteru2/agent/types"
+	"github.com/projecteru2/agent/utils"
 	coreutils "github.com/projecteru2/core/utils"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -73,17 +74,28 @@ func (e *Engine) checkOneContainer(container *types.Container) {
 		log.Debugf("[checkSingleContainerHealthy] check container %s health status: %v", container.ID, container.Healthy)
 	}
 
-	cctx, cancel := context.WithTimeout(context.Background(), e.config.GlobalConnectionTimeout)
-	defer cancel()
-	if err := e.store.SetContainerStatus(cctx, container, e.node, e.config.GetHealthCheckStatusTTL()); err != nil {
+	if err := e.setContainerStatus(container); err != nil {
 		log.Errorf("[checkOneContainer] update deploy status failed %v", err)
 	}
+}
+
+// 设置容器状态，允许重试，带timeout控制
+func (e *Engine) setContainerStatus(container *types.Container) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	return utils.BackoffRetry(ctx, 3, func() error {
+		cctx, ccancel := context.WithTimeout(ctx, e.config.GlobalConnectionTimeout)
+		defer ccancel()
+		return e.store.SetContainerStatus(cctx, container, e.node, e.config.GetHealthCheckStatusTTL())
+	})
 }
 
 // 检查一个容器，允许重试
 func (e *Engine) checkOneContainerWithBackoffRetry(container *types.Container) {
 	log.Debugf("[checkOneContainerWithBackoffRetry] check container %s", container.ID)
-	err := utils.BackoffRetry(context.TODO(), e.config.GetHealthCheckStatusTTL(), func() error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	err := utils.BackoffRetry(ctx, getMaxAttemptsByTTL(e.config.GetHealthCheckStatusTTL()), func() error {
 		e.checkOneContainer(container)
 		if !container.Healthy {
 			// 这个err就是用来判断要不要继续的，不用打在日志里

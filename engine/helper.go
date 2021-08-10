@@ -3,17 +3,19 @@ package engine
 import (
 	"context"
 	"fmt"
-	enginetypes "github.com/docker/docker/api/types"
-	enginecontainer "github.com/docker/docker/api/types/container"
-	enginefilters "github.com/docker/docker/api/types/filters"
+	"math"
+	"os"
+	"strings"
+
 	"github.com/projecteru2/agent/common"
 	"github.com/projecteru2/agent/engine/status"
 	"github.com/projecteru2/agent/types"
 	"github.com/projecteru2/core/cluster"
 	coreutils "github.com/projecteru2/core/utils"
-	"math"
-	"os"
-	"strings"
+
+	enginetypes "github.com/docker/docker/api/types"
+	enginecontainer "github.com/docker/docker/api/types/container"
+	enginefilters "github.com/docker/docker/api/types/filters"
 )
 
 func useLabelAsFilter() bool {
@@ -116,4 +118,15 @@ func (e *Engine) detectContainer(id string) (*types.Container, error) {
 	}
 
 	return container, nil
+}
+
+func getMaxAttemptsByTTL(ttl int64) int {
+	if ttl <= 1 {
+		return 1
+	}
+	maxAttempts := int(math.Floor(math.Log2((float64(ttl) - 1) / 2)))
+	if maxAttempts < 1 {
+		maxAttempts = 1
+	}
+	return maxAttempts
 }
