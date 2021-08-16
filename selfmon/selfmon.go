@@ -81,7 +81,7 @@ func (m *Selfmon) Run() {
 	defer cancel()
 
 	go m.initNodeStatus(ctx)
-	go m.watchNodeStatus(ctx)
+	//go m.watchNodeStatus(ctx)
 
 	<-m.Exit()
 	log.Warnf("[selfmon] exit from %p main loop", m)
@@ -342,11 +342,11 @@ func Monitor(config *types.Config) error {
 		return err
 	}
 
-	unregister, err := mon.Register()
-	if err != nil {
-		return err
-	}
-	defer unregister()
+	//unregister, err := mon.Register()
+	//if err != nil {
+	//	return err
+	//}
+	//defer unregister()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
