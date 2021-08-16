@@ -39,6 +39,7 @@ func TestRun(t *testing.T) {
 			},
 		},
 	}, nil).Once()
+	rpc.On("ListPods", mock.Anything, mock.Anything).Return(&pb.Pods{}, nil)
 	rpc.On("ListPodNodes", mock.Anything, mock.Anything).Return(&pb.Nodes{}, nil)
 	rpc.On("SetNode", mock.Anything, mock.Anything).Return(&pb.Node{}, nil)
 	defer rpc.AssertExpectations(t)
