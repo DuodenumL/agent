@@ -105,7 +105,7 @@ func (m *Selfmon) getAllNodes(ctx context.Context) ([]*pb.Node, error) {
 			defer wg.Done()
 			listPodNodesCtx, listPodNodesCancel := context.WithTimeout(ctx, m.config.GlobalConnectionTimeout)
 			defer listPodNodesCancel()
-			nodes, err := m.rpc.ListPodNodes(listPodNodesCtx, &pb.ListNodesOptions{Podname: podName})
+			nodes, err := m.rpc.ListPodNodes(listPodNodesCtx, &pb.ListNodesOptions{Podname: podName, All: true})
 			if err != nil {
 				errChan <- err
 				return
@@ -131,12 +131,7 @@ func (m *Selfmon) getAllNodes(ctx context.Context) ([]*pb.Node, error) {
 	return res, nil
 }
 
-func (m *Selfmon) initNodeStatus(ctx context.Context) {
-	nodes, err := m.getAllNodes(ctx)
-	if err != nil {
-		return
-	}
-
+func (m *Selfmon) dealNodeStatus(ctx context.Context, nodes []*pb.Node) {
 	wg := &sync.WaitGroup{}
 	for _, n := range nodes {
 		wg.Add(1)
@@ -158,6 +153,22 @@ func (m *Selfmon) initNodeStatus(ctx context.Context) {
 		}(n)
 	}
 	wg.Wait()
+}
+
+func (m *Selfmon) initNodeStatus(ctx context.Context) {
+	nodes, err := m.getAllNodes(ctx)
+	if err != nil {
+		return
+	}
+
+	step := 10
+	for i := 0; i < len(nodes); i+=step {
+		right := i + step
+		if right > len(nodes) {
+			right = len(nodes)
+		}
+		m.dealNodeStatus(ctx, nodes[i:right])
+	}
 }
 
 func (m *Selfmon) watchNodeStatus(ctx context.Context) {
