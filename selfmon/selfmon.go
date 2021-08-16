@@ -149,7 +149,8 @@ func (m *Selfmon) dealNodeStatus(ctx context.Context, nodes []*pb.Node) {
 			} else {
 				fakeMessage.Alive = status.Alive
 			}
-			m.dealNodeStatusMessage(fakeMessage)
+			fmt.Println(fakeMessage)
+			//m.dealNodeStatusMessage(fakeMessage)
 		}(n)
 	}
 	wg.Wait()
